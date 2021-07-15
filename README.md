@@ -11,11 +11,11 @@ Baseline training obtained with 'bert-base-multilingual cased'.
 2. Classification training basic command: `python3 train_class.py`
 
 ## Data Augmentation Methods
-# 1. EDA - Easy Data Augmentation (with modifications)
+### 1. EDA - Easy Data Augmentation (with modifications)
 To be uploaded.
 
-# 2. TransPlacement: Translation Replacement
+### 2. TransPlacement: Translation Replacement
 To be uploaded.
 
-# 3. Synonym Replacement with Word Embeddings
+### 3. Synonym Replacement with Word Embeddings
 To be uploaded.
