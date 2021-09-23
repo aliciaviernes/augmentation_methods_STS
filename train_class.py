@@ -1,6 +1,6 @@
 """
 Classification module. Structure as per SBERT suggestion.
-Addition of iteration loops and stats.
+Addition of MLflow logging info, iteration loops, and stats.
 """
 from torch.utils.data import DataLoader
 import math
@@ -19,28 +19,35 @@ from baseline.loss import modifiedSoftmaxLoss
 
 from baseline.evaluate import LabelAccuracyEvaluator
 
-# from EDA.mod_augment import *
-# from TP.tp_train import *
-# from WordEmb.we_train import *
+from EDA.mod_augment import *
+from TP.tp_train import *
+from WordEmb.we_train import *
+from ConAug.ca_train import *
 
 parser = argparse.ArgumentParser(description="Training hyperparameters")
-parser.add_argument('--batch_size', type=int, default=256, required=False, help="Train batch size")
-parser.add_argument('--num_epochs', type=int, default=4, required=False, help="Number of epochs")
-parser.add_argument('--eval_loops', type=int, default=8, required=False, help="Evaluation loops in each epoch")
+parser.add_argument('--batch_size', '-b', type=int, default=256, required=False, help="Train batch size")
+parser.add_argument('--num_epochs', '-n', type=int, default=4, required=False, help="Number of epochs")
+parser.add_argument('--eval_loops', '-v', type=int, default=8, required=False, help="Evaluation loops in each epoch")
 parser.add_argument('--warmup_percent', type=float, default=0.1, required=False, help="Percent of warming steps (0.1 for 10%)")
 parser.add_argument('--num_iterations', '-i', type=int, default=20, required=False, help="Number of iterations")
 aug_group = parser.add_mutually_exclusive_group()
 aug_group.add_argument('--eda', '-e', action='store_true', help='Easy Data Augmentation')
 aug_group.add_argument('--tp', '-t', action='store_true', help='TransPlacement')
 aug_group.add_argument('--we', '-w', action='store_true', help='Word Embedding Synonym Replacement')
+aug_group.add_argument('--ca', '-c', action='store_true', help='Contextual Augmentation (T5)')
 args = parser.parse_args()
 
-num_labels = 2; dataset = 'MSRP'
-dataset_path = 'data/datasets/MSRP/'
+
+dataset = 'MSRP'
+dataset_path = f'data/datasets/{dataset}/'
+num_labels = 2 
 
 # Specification of BERT model and save path.
 model_name = 'distilbert-base-multilingual-cased'  # change to multilingual
 model_save_path = f'output/training_class_{dataset}_'+model_name.replace("/", "-")+'-'+datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # TODO
+os.environ["CUDA_VISIBLE_DEVICES"]="0"  # TODO
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -50,8 +57,6 @@ logging.basicConfig(format='%(asctime)s - %(message)s',
 #### /print debug information to stdout
 
 starttime = time.time()
-
-
 iter_outer = dict() # one dictionary for all iterations
 
 for i in range(args.num_iterations):
@@ -59,9 +64,17 @@ for i in range(args.num_iterations):
     if i < 10:
         i = str(i).zfill(2)
 
-    train_samples = util.msrp_base(f'{dataset_path}msr_paraphrase_train-new.csv')  # Important
-    dev_samples = util.msrp_base(f'{dataset_path}msr_paraphrase_dev.csv')
-    test_samples = util.msrp_base(f'{dataset_path}msr_paraphrase_test.csv')     
+    if dataset == 'MSRP':
+        train_samples = util.msrp_base(f'{dataset_path}msr_paraphrase_train-new.csv')  # Important
+        dev_samples = util.msrp_base(f'{dataset_path}msr_paraphrase_dev.csv')
+        test_samples = util.msrp_base(f'{dataset_path}msr_paraphrase_test.csv')
+        vector = False        
+
+    else:
+        train_samples = util.vector_base(f'{dataset_path}vector_trainfile.csv')
+        dev_samples = util.vector_base(f'{dataset_path}vector_devfile.csv')
+        test_samples = util.vector_base(f'{dataset_path}vector_testfile.csv')
+        vector = True
 
     logging.info(f"ITERATION {i}")
 
@@ -69,16 +82,21 @@ for i in range(args.num_iterations):
 
     iter_inner = {'epoch':[], 'global_steps':[]}  # inner dictionary for each iteration
 
-    logging.info(f"Augment {dataset} dataset - Train") 
+    logging.info(f"Augment {dataset} dataset - Train")  # NOTE augmentation not saved - okay?
+    # PLACEHOLDER FOR DATA AUGMENTATION FUNCTION
     
-    # if args.eda:
-        # train_samples = eda_train(train=train_samples, num_aug=3)
-    # elif args.tp:
-        # train_samples = tp_train(corpus='msrp', train=train_samples, nr_aug=3)
-    # elif args.we:
-        # train_samples = we_train(train=train_samples, nr_aug=3)
-    # else:
-        # train_samples = util.zeroaugment(train_samples=train_samples)
+    if args.eda:
+        train_samples = eda_train(train=train_samples, num_aug=3)
+    elif args.tp:
+        train_samples = tp_train(corpus='msrp', train=train_samples, nr_aug=3)
+    elif args.we:
+        train_samples = we_train(train=train_samples, nr_aug=3)
+    elif args.ca:
+        DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        train_samples = ca_train(train=train_samples, batch_size=38, 
+                        nr_augs=3, device=DEVICE)
+    else:
+        train_samples = util.zeroaugment(train_samples=train_samples)
 
 
     logging.info(f"Load {dataset} dataset, initialize loss and evaluators.")
@@ -121,8 +139,8 @@ with open(f'{dataset}_{outputfile}.json', 'w') as f:
     json.dump(iter_outer, f, indent=2)
 util.sum_best_dev_class(f'{dataset}_{outputfile}')
 util.add_statistics(f'{dataset}_{outputfile}.csv')
+
     
 endtime = time.time()  
-
 elapsed = endtime - starttime
 logging.info(f"Time elapsed: {util.hours_minutes_seconds(elapsed)}")

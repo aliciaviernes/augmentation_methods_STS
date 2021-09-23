@@ -1,0 +1,15 @@
+**/output
+**/__pycache__
+**/.ipynb_checkpoints
+**/data
+**/stats
+**/env
+*.csv
+*.json
+*.txt
+*.sh
+**/.vscode
+*.bin
+*.npy
+*.model
+**/vt5
