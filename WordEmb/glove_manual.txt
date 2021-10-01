@@ -1,0 +1,6 @@
+Load GloVe model as Word2Vec
+
+- Download from: https://nlp.stanford.edu/data/glove.6B.zip
+- unzip and save in this directory: ./glove.6B.50d.txt 
+
+- Uncomment line 3, 6 and 8 from we_train.py

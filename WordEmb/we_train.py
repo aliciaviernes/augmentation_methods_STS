@@ -2,7 +2,7 @@ from gensim.models import Word2Vec, KeyedVectors
 from WordEmb.we_base import *
 # from gensim.scripts.glove2word2vec import glove2word2vec
 
-# NOTE Load GloVe as Word2Vec
+
 # glove_file = 'glove/glove.6B.50d.txt'
 tmp_file = 'WordEmb/glove.6B.50d-temp.txt'
 # _ = glove2word2vec(glove_file, tmp_file)
@@ -12,8 +12,7 @@ stop_words = set(stopwords.words('english'))
 stop_words.add('A')
 stop_words.add('The')
 
-# path below is not valid for obvious reasons.
-wv_vector = Word2Vec.load('../vector_model.bin')
+wv_vector = Word2Vec.load('WordEmb/vector/vector_model.bin')
 
 def create_aug_set(nr_aug, text, model, stop_words):
     aug_set = set()

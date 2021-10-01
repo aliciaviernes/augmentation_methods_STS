@@ -46,8 +46,6 @@ num_labels = 2
 model_name = 'distilbert-base-multilingual-cased'  # change to multilingual
 model_save_path = f'output/training_class_{dataset}_'+model_name.replace("/", "-")+'-'+datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # TODO
-os.environ["CUDA_VISIBLE_DEVICES"]="0"  # TODO
 
 #### Just some code to print debug information to stdout
 logging.basicConfig(format='%(asctime)s - %(message)s',

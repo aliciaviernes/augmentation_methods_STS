@@ -1,0 +1,6 @@
+FINETUNING for the Vector dataset.
+
+-   Additional dataset needed: ServiceNow
+-   Run preprocessing.py on dataset.
+-   Use output of preprocessing.py as input for finetuning.py:
+    python3 finetuning.py -i='inputname.h5' -o='anydirectory/'

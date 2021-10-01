@@ -6,8 +6,6 @@ import pandas as pd
 from statistics import mean, median, stdev, variance
 
 
-####################### °*~ FILE READING AND PREPARATION FUNCTIONS ~*° #######################
-
 # For regression training - STS: split samples into train, dev, test.
 def split_sts(dataset):
     train, dev, test = [], [], []
@@ -54,12 +52,14 @@ def sts_de_base(filename):
             samples.append(inp_example)    
     return samples
 
+
 # For regression traning - STS-b German -- from a directory!
 def split_sts_DE(directory):
     train = sts_de_base(directory + 'stsb_de_train.csv')
     dev = sts_de_base(directory + 'stsb_de_dev.csv')
     test = sts_de_base(directory + 'stsb_de_test.csv')
     return train, dev, test
+
 
 # Base function for the Vector internal dataset
 def vector_base(filename):
@@ -77,6 +77,7 @@ def vector_base(filename):
         inputs.append(inp_example)
     return inputs
 
+
 # Base function for the MSRP dataset
 def msrp_base(filename):
     df = pd.read_csv(filename, sep='\t')
@@ -93,7 +94,7 @@ def msrp_base(filename):
 def get_best_score_index(sourcelist):
     return(sourcelist.index(max(sourcelist)))
 
-
+# Functions below split for testing
 def sum_best_dev(filename):  
     with open(f'{filename}.json') as json_file:
         data = json.load(json_file)
@@ -115,6 +116,11 @@ def sum_best_dev(filename):
                 for key in data[str(i)][k].keys():
                     row[k + '_' + key]= data[str(i)][k][key][0]
         newdata.append(row)
+    return headers, newdata
+
+
+def write_file_sum_best_dev(filename):
+    headers, newdata = sum_best_dev(filename)
     try:
         with open(f'{filename}.csv', 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
@@ -149,6 +155,11 @@ def sum_best_dev_class(filename):
                 for key in data[str(i)][k].keys():
                     row[k + '_' + key]= data[str(i)][k][key][0]
         newdata.append(row)
+    return headers, newdata
+
+
+def write_file_sum_best_dev_class(filename):
+    headers, newdata = sum_best_dev_class(filename)
     try:
         with open(f'{filename}.csv', 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
@@ -169,15 +180,15 @@ def add_statistics(csvfile):
         values = df[metric].values.tolist() # log them
         
         anotherdict['mean'].append(mean(values))
-        
+
         anotherdict['median'].append(median(values))
-        
+
         anotherdict['stdev'].append(stdev(values))
-        
+
         anotherdict['var'].append(variance(values))
-        
+
         anotherdict['min'].append(min(values))
-        
+
         anotherdict['max'].append(max(values))
     
     newdf = pd.DataFrame.from_dict(anotherdict, orient='index')
@@ -185,8 +196,6 @@ def add_statistics(csvfile):
     result = pd.concat([df, newdf])
     result.to_csv(csvfile, index=True)
 
-
-################################# °*~ GENERAL FUNCTIONS ~*° #################################
 
 def hours_minutes_seconds(elapsed):
     hours = elapsed // 3600
@@ -197,51 +206,18 @@ def hours_minutes_seconds(elapsed):
     return str(int(hours)) + ' hours | ' + str(int(minutes)) + ' minutes | ' + str(round(seconds, 2)) + ' seconds'
 
 
-"""
-# DEPRECATED
-def split_tickets(filename):
-    df = pd.read_csv(filename, sep='|')
-    train, dev, test = np.split(df.sample(frac=1, random_state=42), 
-                       [int(.8*len(df)), int(.9*len(df))])  # partition: 80 - 10 - 10
-                       # größe: train.shape[0]
-    train_samples = vector_base(train)
-    dev_samples = vector_base(dev)
-    test_samples = vector_base(test)
-    return train_samples, dev_samples, test_samples
-
-# Randomly distribute MSRP train into train and dev.
-# do this one-time
-def newsplit(path2dataset, drop_rate=0.2):
-    dev_id = set()
-    with open(path2dataset, 'rt', encoding='utf8') as fIn:
-        reader = csv.DictReader(fIn, delimiter='\t', quoting=csv.QUOTE_NONE)
-        for row in reader:
-            if random.uniform(0,1) < drop_rate:
-                dev_id.add(row['#1 ID'])
-    
-    return dev_id
-
-# One time - convert txt to csv
-with open('./datasets/SICK/SICK_annotated.txt', 'r') as in_file:
-    stripped = (line.strip() for line in in_file)
-    lines = (line.split("\t") for line in stripped if line)
-    with open(path2sick, 'w') as out_file:
-        writer = csv.writer(out_file, delimiter='\t')
-        writer.writerows(lines)
-"""
-
 def zeroaugment(train_samples):
     return train_samples
 
 
-def read_save_csv(filename, delimiter):  # NOTE maybe add to util
+def read_save_csv(filename, delimiter):
     with open(filename) as csvfile:
         reader = csv.reader(csvfile, delimiter=delimiter)
         data = list(reader)
     return data
 
 
-def read_langs(filename): 
+def read_langs(filename):
     langs = list()
     data = read_save_csv(filename, '\t')  # we know that the lang file has this delimiter.
     data = data[1:]  # chop header off

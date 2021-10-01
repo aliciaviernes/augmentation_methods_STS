@@ -1,10 +1,10 @@
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.evaluation import SentenceEvaluator
 
+import mlflow
 import os
-# from collections import OrderedDict
-# from typing import Union, List
-from typing import Dict, Tuple, Iterable, Type, Callable
+from collections import OrderedDict
+from typing import List, Dict, Tuple, Iterable, Type, Union, Callable
 import numpy as np
 import transformers
 import torch
@@ -18,8 +18,8 @@ class modifiedSentenceTransformer(SentenceTransformer):
 
     def fit(self,
             train_objectives: Iterable[Tuple[DataLoader, nn.Module]],
-            iter_dict: dict,  
-            iteration = int,  
+            iter_dict: dict,  # ADDITION
+            iteration = int,  # ADDITION
             evaluator: SentenceEvaluator = None,
             epochs: int = 1,
             steps_per_epoch = None,
@@ -115,10 +115,8 @@ class modifiedSentenceTransformer(SentenceTransformer):
 
         num_train_objectives = len(train_objectives)
 
-        train_loss_step_wise = []
-        
-        list_of_list_contains_metric = {}
-
+        train_loss_step_wise = []  # ADDITION
+        list_of_list_contains_metric = {}  # ADDITION
         
         skip_scheduler = False
         for epoch in trange(epochs, desc="Epoch", disable=not show_progress_bar):
@@ -160,18 +158,21 @@ class modifiedSentenceTransformer(SentenceTransformer):
                         scaler.step(optimizer)
                         scaler.update()
                         skip_scheduler = scaler.get_scale() != scale_before_step
+                        # ADDITION
                         loss_of_batch = loss_value.tolist()
-                        train_loss_step_wise.append(loss_of_batch)  
+                        train_loss_step_wise.append(loss_of_batch) 
                         if len(list_of_list_contains_metric.keys()) == 0: 
                             list_of_list_contains_metric = outputs_as_dict
                         else:
                             for k in outputs_as_dict.keys():
                                 list_of_list_contains_metric[k].extend(outputs_as_dict[k])
+
                     else:
                         loss_value, outputs_as_dict = loss_model(features, labels)
                         loss_value.backward()
                         torch.nn.utils.clip_grad_norm_(loss_model.parameters(), max_grad_norm)
                         optimizer.step()
+                        # ADDITION
                         loss_of_batch = loss_value.tolist() # float since it is a scalar
                         train_loss_step_wise.append(loss_of_batch)
 
@@ -188,19 +189,22 @@ class modifiedSentenceTransformer(SentenceTransformer):
                 training_steps += 1
                 global_step += 1
 
+                # TODO: Gefahr der Dopplung?
                 if evaluation_steps > 0 and training_steps % evaluation_steps == 0 and steps_per_epoch != training_steps:
+                    # ADDITION
                     train_info = (train_loss_step_wise, list_of_list_contains_metric)
                     self._eval_during_training(evaluator, output_path, save_best_model, epoch,
-                                               global_step, callback, loss_model, train_info)
+                                               global_step, callback, loss_model, train_info)  # PROB.
                     list_of_list_contains_metric = {}
                     for loss_model in loss_models:
                         loss_model.zero_grad()
                         loss_model.train()
+            # ADDITION
             train_info = (train_loss_step_wise, list_of_list_contains_metric)
             self._eval_during_training(evaluator, output_path, save_best_model, epoch, global_step, callback, loss_model, train_info)
             list_of_list_contains_metric = {}
 
-        if evaluator is None and output_path is not None: 
+        if evaluator is None and output_path is not None:   #No evaluator, but output path: save final model version
             self.save(output_path)
 
     def _eval_during_training(self, evaluator, output_path, save_best_model, epoch, global_step, callback, loss_model, train_info=None):
@@ -213,21 +217,25 @@ class modifiedSentenceTransformer(SentenceTransformer):
                 self.best_score = score
                 if save_best_model:
                     self.save(output_path)
+                    # NOTE to self: A common PyTorch convention is to save models using either a .pt or .pth file extension.
                     if 'Softmax' in str(type(loss_model)):
                         torch.save(loss_model.classifier.state_dict(), output_path + '/bestmodel_classifier.pth') 
-
+        # ADDITION 
         if train_info is not None:
             eval_iteration_train_loss = np.mean(train_info[0])
             list_of_list_contains_metric = train_info[1]
-
             for key in list_of_list_contains_metric.keys():
-                if 'train' not in self.iter_dict:  # train
-                    self.iter_dict['train'] = {}
-                    self.iter_dict['train']['loss'] = [eval_iteration_train_loss]
-                    for k in list_of_list_contains_metric:
-                        self.iter_dict['train'][k] = [np.mean(list_of_list_contains_metric[key])]
-                else:
-                    self.iter_dict['train']['loss'].append(eval_iteration_train_loss)
-                    for k in list_of_list_contains_metric:
-                        self.iter_dict['train'][k].append(np.mean(list_of_list_contains_metric[key]))
+                mlflow.log_metric(f"{self.iteration}_train_" + key, np.mean(list_of_list_contains_metric[key]), global_step)
+            mlflow.log_metric(f'{self.iteration}_train_loss', eval_iteration_train_loss, global_step)
+
+            if 'train' not in self.iter_dict:  # train
+                self.iter_dict['train'] = {}
+                self.iter_dict['train']['loss'] = [eval_iteration_train_loss]
+                for k in list_of_list_contains_metric:
+                    self.iter_dict['train'][k] = [np.mean(list_of_list_contains_metric[k])]
+            else:
+                self.iter_dict['train']['loss'].append(eval_iteration_train_loss)
+                for k in list_of_list_contains_metric:
+                    self.iter_dict['train'][k].append(np.mean(list_of_list_contains_metric[k]))
+
  

@@ -1,0 +1,4 @@
+Download from https://www.argosopentech.com/argospm/index/:
+    de_en.argosmodel
+    en_de.argosmodel
+Save in this directory.
