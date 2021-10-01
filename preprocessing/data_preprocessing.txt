@@ -1,0 +1,40 @@
+DATA PREPROCESSING
+
+1   Datasets
+
+Save under "data/datasets/".
+    
+    a.  STS-b
+        - Download from https://ixa2.si.ehu.eus/stswiki/index.php/STSbenchmark
+    
+    b.  SICK
+        - Download from https://wiki.cimec.unitn.it/tiki-index.php?page=CLIC
+        - Save "SICK_annotated.txt" in sub-folder "SICK/"
+        - Run preprocessing/sickr_preparation.py
+    
+    c.  MRPC
+        - Download from https://www.microsoft.com/en-us/download/details.aspx?id=52398
+        - Save "msr_paraphrase_train.txt" and "msr_paraphrase_test.txt" in sub-folder "MSRP/"
+        - Run first half of preprocessing/class_data_prep.ipynb
+    
+    d.  Vector dataset
+        - No download available.
+        - Save in sub-folder "vector/"
+        - Run second half of preprocessing/class_data_prep.ipynb
+
+
+2   TP-lookups
+    
+    a. Translations
+
+    - Install argostranslate.
+    - Download packages: de_en.argosmodel, en_de.argosmodel
+                        in "[anyfolder]/models/"
+    - For STS-b: Translation is available online.
+    - For SICK-R: Run ./translate/argos_sick.py
+    - For MRPC: Run ./translate/argos_mrpc.py
+    - For Vector: Run ./translate/vector_langdetect.py & translate_vector.py
+
+    b. Alignments
+
+    - Look into ./alignments/
