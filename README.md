@@ -33,7 +33,7 @@ Requirements:
 - Translations of the train file (in the form `source sentence ||| target sentence`).
 - Alignments between source and target sentences (in the form `0-0 1-1 2-3 3-3`).
 
-Or use existing files (`data/tp_lookups/...`).
+Scripts for translation & alignment under `preprocessing/[traslate|alignments]`.
 
 Add `-t` to basic command.
 
@@ -42,11 +42,17 @@ Add `-t` to basic command.
 
 Word2Vec obtained with Gensim. For public datasets, pretrained Word2Vec is loaded.
 
+Download model according to `WordEmb/glove_manual.txt`.
+
+Word2Vec training for Vector: `WordEmb/vector/gensim_word2vec_custom.ipynb`.
+
 Add `-w` to basic command.
 
 
 ### 4. Contextual Augmentation
 
-A masked language model (MLM) is used, in this case t5-base.
+We use T5 as our masked language model. 
+Pretrained `t5-base` used for public datasets.
+For Vector dataset look into `ConAug/vector/`.
 
 Add `-c` to basic command.

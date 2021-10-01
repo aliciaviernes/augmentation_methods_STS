@@ -30,7 +30,8 @@ Save under "data/datasets/".
     - Install argostranslate.
     - Download packages: de_en.argosmodel, en_de.argosmodel
                         in "[anyfolder]/models/"
-    - For STS-b: Translation is available online.
+    - For STS-b: Translation is available online 
+    (https://github.com/t-systems-on-site-services-gmbh/german-STSbenchmark).
     - For SICK-R: Run ./translate/argos_sick.py
     - For MRPC: Run ./translate/argos_mrpc.py
     - For Vector: Run ./translate/vector_langdetect.py & translate_vector.py

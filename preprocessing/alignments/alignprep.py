@@ -83,13 +83,17 @@ if __name__ == "__main__":
 
     # STS-b
     stsb_en = f"{base}datasets/stsbenchmark.tsv.gz"; 
-    stsb_de = ""
-    stsb_SRC, _, _ = ""; stsb_TGT, _, _ = ""
+    stsb_de = "/path/to/german/dataset/"
+    stsb_SRC, _, _ = split_sts(stsb_en); stsb_TGT, _, _ = split_sts(stsb_de)
     write_alignment_sample(stsb_SRC, stsb_TGT, f"{base}tp_lookups/stsb{suffix}")
     # SICK
     sick_en = f"{base}datasets/SICK/SICK_annotated.csv" 
     sick_de = f"{base}datasets/SICK/SICK_annotated_DE.csv"
+    sick_SRC, _, _ = split_sick(sick_en); sick_TGT, _, _ = split_sick(sick_de)
+    write_alignment_sample(sick_SRC, sick_TGT, f"{base}tp_lookups/sick{suffix}")
     # MRPC
     mrpc_en = f"{base}datasets/MSRP/msr_paraphrase_train-new.csv" 
     mrpc_de = f"{base}datasets/MSRP/msr_paraphrase_train_DE.csv"
-    # read vector & write_alignment_sample
+    mrpc_SRC = msrp_base(mrpc_en); mrpc_TGT = msrp_base(mrpc_de)
+    write_alignment_sample(mrpc_SRC, mrpc_TGT, f"{base}tp_lookups/msrp{suffix}")
+

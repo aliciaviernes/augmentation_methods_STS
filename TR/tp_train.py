@@ -1,4 +1,4 @@
-import TP.tp_util as tpu
+import TR.tp_util as tpu
 from baseline.util import *
 import random, time
 

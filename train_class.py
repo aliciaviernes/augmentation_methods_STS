@@ -20,7 +20,7 @@ from baseline.loss import modifiedSoftmaxLoss
 from baseline.evaluate import LabelAccuracyEvaluator
 
 from EDA.mod_augment import *
-from TP.tp_train import *
+from TR.tp_train import *
 from WordEmb.we_train import *
 from ConAug.ca_train import *
 
