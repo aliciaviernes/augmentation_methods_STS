@@ -4,12 +4,13 @@
 **/data
 **/stats
 **/env
+**/vt5
+**/*_abl
+**/.vscode
 *.csv
 *.json
-*.txt
+glove.6B.50d-temp.txt
 *.sh
-**/.vscode
 *.bin
 *.npy
-*.model
-**/vt5
+*.*model
