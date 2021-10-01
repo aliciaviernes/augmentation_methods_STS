@@ -52,7 +52,9 @@ Add `-w` to basic command.
 ### 4. Contextual Augmentation
 
 We use T5 as our masked language model. 
+
 Pretrained `t5-base` used for public datasets.
+
 For Vector dataset look into `ConAug/vector/`.
 
 Add `-c` to basic command.
