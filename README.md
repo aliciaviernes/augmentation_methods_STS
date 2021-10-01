@@ -1,4 +1,4 @@
-# Exploration of Data Augmentation Methods for Semantic Textual Similarity Tasks
+# A study on Data Augmentation Methods for Semantic Textual Similarity Tasks
 
 ## Requirements
 
